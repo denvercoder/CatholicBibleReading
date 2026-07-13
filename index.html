@@ -306,6 +306,36 @@ html[data-theme="dark"] .card::after {
   footer::before { width:110px; }
 }
 
+
+
+
+
+#backToTopBtn {
+  position:fixed;
+  right:16px;
+  bottom:calc(18px + env(safe-area-inset-bottom));
+  z-index:20;
+  min-height:44px;
+  padding:10px 14px;
+  border-radius:999px;
+  background:linear-gradient(180deg, #1d2d50, var(--navy));
+  color:#fff;
+  border:1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+  box-shadow:0 6px 18px rgba(0,0,0,.28);
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(10px);
+  transition:opacity .2s ease, transform .2s ease;
+}
+#backToTopBtn.visible {
+  opacity:1;
+  pointer-events:auto;
+  transform:translateY(0);
+}
+html[data-theme="dark"] #backToTopBtn {
+  background:linear-gradient(180deg, #24385f, #152544);
+}
+
 </style>
 </head>
 <body>
@@ -315,47 +345,47 @@ html[data-theme="dark"] .card::after {
 </header>
 
 <main>
-  <section class="card dashboard" aria-live="polite">
-    <div class="dashboard-top">
-      <div>
-        <div class="eyebrow">Today</div>
-        <h2 id="todayDay">Day 1</h2>
-        <div id="todayReading">Genesis 1–2</div>
-        <div id="todayPsalm">Psalm 1</div>
+    <section class="card dashboard" aria-live="polite">
+      <div class="dashboard-top">
+        <div>
+          <div class="eyebrow">Today</div>
+          <h2 id="todayDay">Day 1</h2>
+          <div id="todayReading">Genesis 1–2</div>
+          <div id="todayPsalm">Psalm 1</div>
+        </div>
+        <div class="streak-box" title="Consecutive calendar days with a completed reading">
+          <span id="streakCount">0</span>
+          <span class="streak-label">day streak</span>
+        </div>
       </div>
-      <div class="streak-box" title="Consecutive calendar days with a completed reading">
-        <span id="streakCount">0</span>
-        <span class="streak-label">day streak</span>
+    </section>
+
+    <section class="card">
+      <div class="progress-wrap">
+        <progress id="progress" max="365" value="0"></progress>
+        <span id="progressText">0 / 365</span>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="card">
-    <div class="progress-wrap">
-      <progress id="progress" max="365" value="0"></progress>
-      <span id="progressText">0 / 365</span>
-    </div>
-  </section>
+    <section class="card controls">
+      <button id="todayBtn">Continue Reading →</button>
+      <button id="settingsBtn" class="secondary" aria-expanded="false" aria-controls="settingsPanel">Settings</button>
+    </section>
 
-  <section class="card controls">
-    <button id="todayBtn">Continue Reading →</button>
-    <button id="settingsBtn" class="secondary" aria-expanded="false" aria-controls="settingsPanel">Settings</button>
-  </section>
-
-  <section id="settingsPanel" class="card settings-panel" aria-hidden="true">
-    <div class="settings-title">
-      <h2>Settings</h2>
-      <button id="closeSettingsBtn" class="secondary">Close</button>
-    </div>
-    <div class="settings-grid">
-      <button id="themeBtn" class="secondary">Dark mode</button>
-      <button id="translationBtn" class="secondary">Use RSV-2CE names</button>
-      <button id="exportBtn" class="secondary">Export progress</button>
-      <button id="importBtn" class="secondary">Import progress</button>
-      <button id="resetBtn" class="secondary">Reset progress</button>
-    </div>
-    <input id="importFile" type="file" accept="application/json" hidden>
-  </section>
+    <section id="settingsPanel" class="card settings-panel" aria-hidden="true">
+      <div class="settings-title">
+        <h2>Settings</h2>
+        <button id="closeSettingsBtn" class="secondary">Close</button>
+      </div>
+      <div class="settings-grid">
+        <button id="themeBtn" class="secondary">Dark mode</button>
+        <button id="translationBtn" class="secondary">Use RSV-2CE names</button>
+        <button id="exportBtn" class="secondary">Export progress</button>
+        <button id="importBtn" class="secondary">Import progress</button>
+        <button id="resetBtn" class="secondary">Reset progress</button>
+      </div>
+      <input id="importFile" type="file" accept="application/json" hidden>
+    </section>
 
   <section class="card note">
     <details>
@@ -374,6 +404,8 @@ html[data-theme="dark"] .card::after {
     <div id="list"></div>
   </section>
 
+
+  <button id="backToTopBtn" type="button" aria-label="Back to top">↑ Back to Top</button>
 
   <footer>Per Mariam ad Iesum</footer>
 </main>
@@ -578,9 +610,7 @@ function setSettingsOpen(open) {
   settingsPanel.classList.toggle("open", open);
   settingsPanel.setAttribute("aria-hidden", String(!open));
   settingsBtn.setAttribute("aria-expanded", String(open));
-  if (open) {
-    settingsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  // The controls remain sticky, so opening Settings should not change scroll position.
 }
 
 settingsBtn.addEventListener("click", () => {
@@ -601,6 +631,19 @@ document.getElementById("translationBtn").addEventListener("click", () => {
   updateTodayCard();
   render(search.value);
 });
+
+const backToTopBtn = document.getElementById("backToTopBtn");
+
+function updateBackToTopVisibility() {
+  backToTopBtn.classList.toggle("visible", window.scrollY > 420);
+}
+
+window.addEventListener("scroll", updateBackToTopVisibility, { passive: true });
+backToTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+updateBackToTopVisibility();
+
 applyTheme();
 applyTranslation();
 updateProgress();

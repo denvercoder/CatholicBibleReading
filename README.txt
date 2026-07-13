@@ -1,10 +1,9 @@
-Catholic Narrative Bible Plan v9
+Catholic Narrative Bible Plan v11
 
-Added subtle illuminated-manuscript styling:
-- Fine gold corner ornaments on cards
-- Small gold header medallion
-- Gold divider beneath the open About section
-- Subtle decorative divider near the reading controls
-- Gold footer divider and ornament
+Changes:
+- Removed the sticky top control area.
+- Restored normal page scrolling for Today, progress, buttons, and Settings.
+- Added a floating Back to Top button that appears after scrolling down.
+- The button remains visible while browsing the reading list and scrolls smoothly to the top.
 
 All previous features remain unchanged.
