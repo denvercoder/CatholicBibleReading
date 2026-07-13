@@ -90,6 +90,112 @@ footer { text-align:center; color:var(--muted); font-size:.8rem; padding:10px; }
   header h1 { font-size:1.45rem; }
   main { padding-top:22px; }
 }
+
+/* App-like parchment treatment */
+body {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(176,141,62,.10), transparent 34rem),
+    var(--bg);
+}
+.card {
+  background:
+    linear-gradient(rgba(255,255,255,.12), rgba(255,255,255,.12)),
+    var(--card);
+  border-color:color-mix(in srgb, var(--line) 82%, var(--gold));
+}
+html:not([data-theme="dark"]) .card {
+  background-image:
+    linear-gradient(rgba(255,253,248,.86), rgba(255,253,248,.86)),
+    repeating-linear-gradient(0deg, rgba(116,83,42,.025) 0 1px, transparent 1px 4px);
+}
+.dashboard {
+  position:relative;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb, var(--gold) 65%, var(--line));
+}
+.dashboard::after {
+  content:"";
+  position:absolute;
+  right:-42px;
+  top:-58px;
+  width:150px;
+  height:150px;
+  border:1px solid color-mix(in srgb, var(--gold) 38%, transparent);
+  border-radius:50%;
+  pointer-events:none;
+}
+.dashboard-top {
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:flex-start;
+}
+.eyebrow {
+  color:var(--gold);
+  font-size:.78rem;
+  font-weight:bold;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+#todayDay {
+  margin:.18rem 0 .3rem;
+  color:var(--navy);
+  font-size:1.55rem;
+}
+html[data-theme="dark"] #todayDay { color:#e8d39b; }
+#todayReading { font-size:1.05rem; }
+#todayPsalm { margin-top:.25rem; color:var(--muted); font-size:.9rem; }
+.streak-box {
+  min-width:82px;
+  padding:10px;
+  text-align:center;
+  background:color-mix(in srgb, var(--gold) 12%, var(--card));
+  border:1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+  border-radius:12px;
+}
+#streakCount {
+  display:block;
+  font-size:1.55rem;
+  line-height:1;
+  font-weight:bold;
+  color:var(--gold);
+}
+.streak-label { font-size:.74rem; color:var(--muted); }
+#todayBtn {
+  font-weight:bold;
+  background:linear-gradient(180deg, #1d2d50, var(--navy));
+}
+.check-celebrate {
+  animation:cardCelebrate .65s ease;
+}
+.check-celebrate::after {
+  content:"✓";
+  position:absolute;
+  right:18px;
+  top:50%;
+  transform:translateY(-50%) scale(0);
+  color:var(--gold);
+  font-size:2rem;
+  font-weight:bold;
+  animation:goldCheck .7s ease forwards;
+}
+.day-card { position:relative; overflow:hidden; }
+@keyframes cardCelebrate {
+  0% { box-shadow:0 4px 14px #0000000d; }
+  45% { box-shadow:0 0 0 5px color-mix(in srgb, var(--gold) 28%, transparent); }
+  100% { box-shadow:0 4px 14px #0000000d; }
+}
+@keyframes goldCheck {
+  0% { opacity:0; transform:translateY(-50%) scale(.3) rotate(-12deg); }
+  45% { opacity:1; transform:translateY(-50%) scale(1.2) rotate(4deg); }
+  100% { opacity:0; transform:translateY(-50%) scale(1) rotate(0); }
+}
+@media (max-width:420px) {
+  .dashboard-top { gap:10px; }
+  #todayDay { font-size:1.35rem; }
+  .streak-box { min-width:72px; }
+}
+
 </style>
 </head>
 <body>
@@ -99,6 +205,21 @@ footer { text-align:center; color:var(--muted); font-size:.8rem; padding:10px; }
 </header>
 
 <main>
+  <section class="card dashboard" aria-live="polite">
+    <div class="dashboard-top">
+      <div>
+        <div class="eyebrow">Today</div>
+        <h2 id="todayDay">Day 1</h2>
+        <div id="todayReading">Genesis 1–2</div>
+        <div id="todayPsalm">Psalm 1</div>
+      </div>
+      <div class="streak-box" title="Consecutive calendar days with a completed reading">
+        <span id="streakCount">0</span>
+        <span class="streak-label">day streak</span>
+      </div>
+    </div>
+  </section>
+
   <section class="card">
     <div class="progress-wrap">
       <progress id="progress" max="365" value="0"></progress>
@@ -107,7 +228,7 @@ footer { text-align:center; color:var(--muted); font-size:.8rem; padding:10px; }
   </section>
 
   <section class="card controls">
-    <button id="todayBtn">Show next reading</button>
+    <button id="todayBtn">Continue Reading →</button>
     <button id="settingsBtn" class="secondary" aria-expanded="false" aria-controls="settingsPanel">Settings</button>
   </section>
 
@@ -126,6 +247,15 @@ footer { text-align:center; color:var(--muted); font-size:.8rem; padding:10px; }
     <input id="importFile" type="file" accept="application/json" hidden>
   </section>
 
+  <section class="card note">
+    <details>
+      <summary>About this plan</summary>
+      <p>This is a narrative-first Catholic reading plan using Douay-Rheims book names. It includes the Catholic deuterocanonical books and intentionally omits or condenses many census lists, repeated genealogies, and ceremonial sections on this first pass.</p>
+      <p>One Psalm is suggested each day. The Psalm cycle repeats after Psalm 150.</p>
+      <p>Your progress, display preferences, and reading streak are stored only in this browser. A streak counts consecutive calendar days on which at least one reading was marked complete.</p>
+    </details>
+  </section>
+
   <section class="card">
     <div class="toolbar">
       <input id="search" type="search" placeholder="Search book or day…">
@@ -134,13 +264,7 @@ footer { text-align:center; color:var(--muted); font-size:.8rem; padding:10px; }
     <div id="list"></div>
   </section>
 
-  <section class="card note">
-    <details>
-      <summary>About this plan</summary>
-      <p>This is a narrative-first Catholic reading plan using Douay-Rheims book names. It includes the Catholic deuterocanonical books and intentionally omits or condenses many census lists, repeated genealogies, and ceremonial sections on this first pass.</p>
-      <p>One Psalm is suggested each day. The Psalm cycle repeats after Psalm 150.</p>
-    </details>
-  </section>
+
   <footer>Per Mariam ad Iesum</footer>
 </main>
 
@@ -149,6 +273,7 @@ const PLAN = [{"day": 1, "reading": "Genesis 1–2", "psalm": 1}, {"day": 2, "re
 const KEY = "catholicNarrativeBibleProgressV1";
 const THEME_KEY = "catholicNarrativeBibleThemeV1";
 const TRANSLATION_KEY = "catholicNarrativeBibleTranslationV1";
+const COMPLETION_DATES_KEY = "catholicNarrativeBibleCompletionDatesV1";
 const RSV_BOOK_NAMES = {
   "Josue":"Joshua","1 Kings":"1 Samuel","2 Kings":"2 Samuel",
   "3 Kings":"1 Kings","4 Kings":"2 Kings",
@@ -162,20 +287,62 @@ const RSV_BOOK_NAMES = {
 let theme = localStorage.getItem(THEME_KEY) || "light";
 let translation = localStorage.getItem(TRANSLATION_KEY) || "douay";
 let completed = new Set(JSON.parse(localStorage.getItem(KEY) || "[]"));
+let completionDates = JSON.parse(localStorage.getItem(COMPLETION_DATES_KEY) || "{}");
 
 const list = document.getElementById("list");
 const progress = document.getElementById("progress");
 const progressText = document.getElementById("progressText");
 const search = document.getElementById("search");
 const jump = document.getElementById("jump");
+const todayDay = document.getElementById("todayDay");
+const todayReading = document.getElementById("todayReading");
+const todayPsalm = document.getElementById("todayPsalm");
+const streakCount = document.getElementById("streakCount");
 
+function localDateKey(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+function addDays(date, amount) {
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() + amount);
+  return copy;
+}
+function calculateStreak() {
+  const dates = new Set(Object.values(completionDates));
+  const today = new Date();
+  let cursor = dates.has(localDateKey(today)) ? today : addDays(today, -1);
+  let streak = 0;
+  while (dates.has(localDateKey(cursor))) {
+    streak++;
+    cursor = addDays(cursor, -1);
+  }
+  return streak;
+}
 function save() {
   localStorage.setItem(KEY, JSON.stringify([...completed].sort((a,b)=>a-b)));
+  localStorage.setItem(COMPLETION_DATES_KEY, JSON.stringify(completionDates));
   updateProgress();
+}
+function updateTodayCard() {
+  const next = PLAN.find(x => !completed.has(x.day));
+  if (!next) {
+    todayDay.textContent = "Plan complete";
+    todayReading.textContent = "You have completed all 365 readings.";
+    todayPsalm.textContent = "Deo gratias.";
+  } else {
+    todayDay.textContent = `Day ${next.day}`;
+    todayReading.textContent = displayReading(next.reading);
+    todayPsalm.textContent = `Psalm ${next.psalm}`;
+  }
+  streakCount.textContent = calculateStreak();
 }
 function updateProgress() {
   progress.value = completed.size;
   progressText.textContent = `${completed.size} / 365`;
+  updateTodayCard();
 }
 function displayReading(reading) {
   if (translation !== "rsv") return reading;
@@ -214,7 +381,15 @@ function render(filter="") {
     cb.checked = completed.has(item.day);
     cb.setAttribute("aria-label", "Mark day " + item.day + " complete");
     cb.addEventListener("change", () => {
-      cb.checked ? completed.add(item.day) : completed.delete(item.day);
+      if (cb.checked) {
+        completed.add(item.day);
+        completionDates[item.day] = localDateKey();
+        wrap.classList.add("check-celebrate");
+        setTimeout(() => wrap.classList.remove("check-celebrate"), 750);
+      } else {
+        completed.delete(item.day);
+        delete completionDates[item.day];
+      }
       wrap.classList.toggle("done", cb.checked);
       save();
     });
@@ -256,11 +431,14 @@ search.addEventListener("input", e => render(e.target.value));
 document.getElementById("todayBtn").addEventListener("click", () => go(nextIncomplete()));
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (confirm("Erase all saved progress on this device?")) {
-    completed.clear(); save(); render(search.value);
+    completed.clear();
+    completionDates = {};
+    save();
+    render(search.value);
   }
 });
 document.getElementById("exportBtn").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify({completed:[...completed], exported:new Date().toISOString()}, null, 2)], {type:"application/json"});
+  const blob = new Blob([JSON.stringify({completed:[...completed], completionDates, exported:new Date().toISOString()}, null, 2)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "bible-plan-progress.json";
@@ -274,7 +452,10 @@ document.getElementById("importFile").addEventListener("change", async e => {
   try {
     const data = JSON.parse(await file.text());
     completed = new Set((data.completed || []).filter(n => Number.isInteger(n) && n >= 1 && n <= 365));
-    save(); render();
+    completionDates = (data.completionDates && typeof data.completionDates === "object")
+      ? data.completionDates : {};
+    save();
+    render();
   } catch {
     alert("That file does not contain valid progress data.");
   }
@@ -307,6 +488,7 @@ document.getElementById("translationBtn").addEventListener("click", () => {
   translation = translation === "rsv" ? "douay" : "rsv";
   localStorage.setItem(TRANSLATION_KEY, translation);
   applyTranslation();
+  updateTodayCard();
   render(search.value);
 });
 applyTheme();
