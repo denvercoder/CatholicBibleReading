@@ -1,12 +1,10 @@
-Catholic Narrative Bible Plan v5
+Catholic Narrative Bible Plan v9
 
-Added:
-- Parchment-style card treatment
-- Today/current-reading dashboard
-- Always-visible Continue Reading button
-- Gold completion animation
-- Local calendar-day streak counter
-- Existing dark mode, translation toggle, progress backup, and settings panel
+Added subtle illuminated-manuscript styling:
+- Fine gold corner ornaments on cards
+- Small gold header medallion
+- Gold divider beneath the open About section
+- Subtle decorative divider near the reading controls
+- Gold footer divider and ornament
 
-Open index.html in a normal browser. For iPhone, host it, open it in Safari,
-then choose Share > Add to Home Screen.
+All previous features remain unchanged.
