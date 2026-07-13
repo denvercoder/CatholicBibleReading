@@ -1,10 +1,9 @@
-Catholic Narrative Bible Plan
+Catholic Narrative Bible Plan v3
 
-Open index.html in any modern browser. Progress is stored with localStorage in that browser.
+Changes:
+- "Show next reading" always remains visible.
+- All other controls are moved into a collapsible Settings panel.
+- Dark mode and translation-name preferences remain saved in the browser.
+- Reading progress remains stored locally.
 
-For best iPhone use:
-1. Put index.html on any basic web host (GitHub Pages, Netlify, Cloudflare Pages, etc.).
-2. Open the site in Safari.
-3. Tap Share > Add to Home Screen.
-
-The site is a single HTML file and requires no database or account.
+Open index.html in a normal browser. On iPhone, host it and use Safari > Share > Add to Home Screen.

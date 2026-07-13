@@ -9,6 +9,12 @@
 :root {
   --bg:#f5f1e8; --card:#fffdf8; --ink:#201a17; --muted:#6d625c;
   --navy:#14213d; --gold:#b08d3e; --line:#d7cbb8; --ok:#2f6b4f;
+  --field:#ffffff; --soft:#ece5d6;
+}
+html[data-theme="dark"] {
+  --bg:#10141d; --card:#171d28; --ink:#f2ede3; --muted:#b7ad9e;
+  --navy:#0d1730; --gold:#c6a45b; --line:#3b4350; --ok:#69a984;
+  --field:#202735; --soft:#262e3c;
 }
 * { box-sizing:border-box; }
 body {
@@ -31,14 +37,39 @@ main { max-width:760px; margin:auto; padding:16px 14px calc(90px + env(safe-area
 .progress-wrap { display:flex; align-items:center; gap:12px; }
 progress { width:100%; height:14px; accent-color:var(--ok); }
 #progressText { white-space:nowrap; font-size:.9rem; color:var(--muted); }
-.controls { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.controls { display:grid; grid-template-columns:1fr auto; gap:10px; }
+.settings-panel {
+  display:none;
+}
+.settings-panel.open {
+  display:block;
+}
+.settings-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.settings-title {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.settings-title h2 {
+  margin:0;
+  font-size:1.05rem;
+}
+@media (max-width:520px) {
+  .settings-grid { grid-template-columns:1fr; }
+}
 button, select, input {
   font:inherit; border-radius:10px; border:1px solid var(--line);
 }
 button {
   min-height:44px; padding:10px 12px; background:var(--navy); color:white; border:none;
 }
-button.secondary { background:#ece5d6; color:var(--ink); border:1px solid var(--line); }
+button.secondary { background:var(--soft); color:var(--ink); border:1px solid var(--line); }
 .day-card { display:flex; align-items:flex-start; gap:12px; }
 .day-card input[type=checkbox] { width:24px; height:24px; margin-top:3px; accent-color:var(--ok); }
 .day-num { font-weight:bold; color:var(--navy); }
@@ -50,8 +81,8 @@ button.secondary { background:#ece5d6; color:var(--ink); border:1px solid var(--
 .toolbar {
   display:grid; grid-template-columns:1fr auto; gap:10px; margin-bottom:12px;
 }
-#search { width:100%; padding:11px 12px; background:white; }
-#jump { padding:0 10px; background:white; }
+#search { width:100%; padding:11px 12px; background:var(--field); color:var(--ink); }
+#jump { padding:0 10px; background:var(--field); color:var(--ink); }
 .note { font-size:.9rem; color:var(--muted); }
 details summary { cursor:pointer; font-weight:bold; }
 footer { text-align:center; color:var(--muted); font-size:.8rem; padding:10px; }
@@ -64,7 +95,7 @@ footer { text-align:center; color:var(--muted); font-size:.8rem; padding:10px; }
 <body>
 <header>
   <h1>Catholic Narrative Bible Plan</h1>
-  <p>Douay-Rheims • 365 days • progress saved in this browser</p>
+  <p id="subtitle">Douay-Rheims • 365 days • progress saved in this browser</p>
 </header>
 
 <main>
@@ -77,9 +108,21 @@ footer { text-align:center; color:var(--muted); font-size:.8rem; padding:10px; }
 
   <section class="card controls">
     <button id="todayBtn">Show next reading</button>
-    <button id="resetBtn" class="secondary">Reset progress</button>
-    <button id="exportBtn" class="secondary">Export progress</button>
-    <button id="importBtn" class="secondary">Import progress</button>
+    <button id="settingsBtn" class="secondary" aria-expanded="false" aria-controls="settingsPanel">Settings</button>
+  </section>
+
+  <section id="settingsPanel" class="card settings-panel" aria-hidden="true">
+    <div class="settings-title">
+      <h2>Settings</h2>
+      <button id="closeSettingsBtn" class="secondary">Close</button>
+    </div>
+    <div class="settings-grid">
+      <button id="themeBtn" class="secondary">Dark mode</button>
+      <button id="translationBtn" class="secondary">Use RSV-2CE names</button>
+      <button id="exportBtn" class="secondary">Export progress</button>
+      <button id="importBtn" class="secondary">Import progress</button>
+      <button id="resetBtn" class="secondary">Reset progress</button>
+    </div>
     <input id="importFile" type="file" accept="application/json" hidden>
   </section>
 
@@ -104,6 +147,20 @@ footer { text-align:center; color:var(--muted); font-size:.8rem; padding:10px; }
 <script>
 const PLAN = [{"day": 1, "reading": "Genesis 1–2", "psalm": 1}, {"day": 2, "reading": "Genesis 3–4", "psalm": 2}, {"day": 3, "reading": "Genesis 5–6", "psalm": 3}, {"day": 4, "reading": "Genesis 7–8", "psalm": 4}, {"day": 5, "reading": "Genesis 9–10", "psalm": 5}, {"day": 6, "reading": "Genesis 11–12", "psalm": 6}, {"day": 7, "reading": "Genesis 13–14", "psalm": 7}, {"day": 8, "reading": "Genesis 15–16", "psalm": 8}, {"day": 9, "reading": "Genesis 17–18", "psalm": 9}, {"day": 10, "reading": "Genesis 19–20", "psalm": 10}, {"day": 11, "reading": "Genesis 21–22", "psalm": 11}, {"day": 12, "reading": "Genesis 23–24", "psalm": 12}, {"day": 13, "reading": "Genesis 25–26", "psalm": 13}, {"day": 14, "reading": "Genesis 27–28", "psalm": 14}, {"day": 15, "reading": "Genesis 29–30", "psalm": 15}, {"day": 16, "reading": "Genesis 31–32", "psalm": 16}, {"day": 17, "reading": "Genesis 33–34", "psalm": 17}, {"day": 18, "reading": "Genesis 35–36", "psalm": 18}, {"day": 19, "reading": "Genesis 37–38", "psalm": 19}, {"day": 20, "reading": "Genesis 39–40", "psalm": 20}, {"day": 21, "reading": "Genesis 41–42", "psalm": 21}, {"day": 22, "reading": "Genesis 43–44", "psalm": 22}, {"day": 23, "reading": "Genesis 45–46", "psalm": 23}, {"day": 24, "reading": "Genesis 47–48", "psalm": 24}, {"day": 25, "reading": "Genesis 49–50", "psalm": 25}, {"day": 26, "reading": "Exodus 1–2", "psalm": 26}, {"day": 27, "reading": "Exodus 3–4", "psalm": 27}, {"day": 28, "reading": "Exodus 5–6", "psalm": 28}, {"day": 29, "reading": "Exodus 7–8", "psalm": 29}, {"day": 30, "reading": "Exodus 9–10", "psalm": 30}, {"day": 31, "reading": "Exodus 11–12", "psalm": 31}, {"day": 32, "reading": "Exodus 13–14", "psalm": 32}, {"day": 33, "reading": "Exodus 15–16", "psalm": 33}, {"day": 34, "reading": "Exodus 17–18", "psalm": 34}, {"day": 35, "reading": "Exodus 19–20", "psalm": 35}, {"day": 36, "reading": "Exodus 21–22", "psalm": 36}, {"day": 37, "reading": "Exodus 23–24", "psalm": 37}, {"day": 38, "reading": "Exodus 32–33", "psalm": 38}, {"day": 39, "reading": "Exodus 34–35", "psalm": 39}, {"day": 40, "reading": "Exodus 36–37", "psalm": 40}, {"day": 41, "reading": "Exodus 38–39", "psalm": 41}, {"day": 42, "reading": "Exodus 40; Numbers 10", "psalm": 42}, {"day": 43, "reading": "Numbers 11–12", "psalm": 43}, {"day": 44, "reading": "Numbers 13–14", "psalm": 44}, {"day": 45, "reading": "Numbers 16–17", "psalm": 45}, {"day": 46, "reading": "Numbers 20–21", "psalm": 46}, {"day": 47, "reading": "Numbers 22–23", "psalm": 47}, {"day": 48, "reading": "Numbers 24–25", "psalm": 48}, {"day": 49, "reading": "Numbers 27; Numbers 31", "psalm": 49}, {"day": 50, "reading": "Numbers 32–33", "psalm": 50}, {"day": 51, "reading": "Numbers 34–35", "psalm": 51}, {"day": 52, "reading": "Numbers 36; Deuteronomy 1", "psalm": 52}, {"day": 53, "reading": "Deuteronomy 2–3", "psalm": 53}, {"day": 54, "reading": "Deuteronomy 4–5", "psalm": 54}, {"day": 55, "reading": "Deuteronomy 6–7", "psalm": 55}, {"day": 56, "reading": "Deuteronomy 8–9", "psalm": 56}, {"day": 57, "reading": "Deuteronomy 10–11", "psalm": 57}, {"day": 58, "reading": "Deuteronomy 27–28", "psalm": 58}, {"day": 59, "reading": "Deuteronomy 29–30", "psalm": 59}, {"day": 60, "reading": "Deuteronomy 31–32", "psalm": 60}, {"day": 61, "reading": "Deuteronomy 33–34", "psalm": 61}, {"day": 62, "reading": "Josue 1–2", "psalm": 62}, {"day": 63, "reading": "Josue 3–4", "psalm": 63}, {"day": 64, "reading": "Josue 5–6", "psalm": 64}, {"day": 65, "reading": "Josue 7–8", "psalm": 65}, {"day": 66, "reading": "Josue 9–10", "psalm": 66}, {"day": 67, "reading": "Josue 11–12", "psalm": 67}, {"day": 68, "reading": "Josue 13–14", "psalm": 68}, {"day": 69, "reading": "Josue 15–16", "psalm": 69}, {"day": 70, "reading": "Josue 17–18", "psalm": 70}, {"day": 71, "reading": "Josue 19–20", "psalm": 71}, {"day": 72, "reading": "Josue 21–22", "psalm": 72}, {"day": 73, "reading": "Josue 23–24", "psalm": 73}, {"day": 74, "reading": "Judges 1–2", "psalm": 74}, {"day": 75, "reading": "Judges 3–4", "psalm": 75}, {"day": 76, "reading": "Judges 5–6", "psalm": 76}, {"day": 77, "reading": "Judges 7–8", "psalm": 77}, {"day": 78, "reading": "Judges 9–10", "psalm": 78}, {"day": 79, "reading": "Judges 11–12", "psalm": 79}, {"day": 80, "reading": "Judges 13–14", "psalm": 80}, {"day": 81, "reading": "Judges 15–16", "psalm": 81}, {"day": 82, "reading": "Judges 17–18", "psalm": 82}, {"day": 83, "reading": "Judges 19–20", "psalm": 83}, {"day": 84, "reading": "Judges 21; Ruth 1", "psalm": 84}, {"day": 85, "reading": "Ruth 2–3", "psalm": 85}, {"day": 86, "reading": "Ruth 4; 1 Kings 1", "psalm": 86}, {"day": 87, "reading": "1 Kings 2–3", "psalm": 87}, {"day": 88, "reading": "1 Kings 4–5", "psalm": 88}, {"day": 89, "reading": "1 Kings 6–7", "psalm": 89}, {"day": 90, "reading": "1 Kings 8–9", "psalm": 90}, {"day": 91, "reading": "1 Kings 10–11", "psalm": 91}, {"day": 92, "reading": "1 Kings 12–13", "psalm": 92}, {"day": 93, "reading": "1 Kings 14–15", "psalm": 93}, {"day": 94, "reading": "1 Kings 16–17", "psalm": 94}, {"day": 95, "reading": "1 Kings 18–19", "psalm": 95}, {"day": 96, "reading": "1 Kings 20–21", "psalm": 96}, {"day": 97, "reading": "1 Kings 22–23", "psalm": 97}, {"day": 98, "reading": "1 Kings 24–25", "psalm": 98}, {"day": 99, "reading": "1 Kings 26–27", "psalm": 99}, {"day": 100, "reading": "1 Kings 28–29", "psalm": 100}, {"day": 101, "reading": "1 Kings 30–31", "psalm": 101}, {"day": 102, "reading": "2 Kings 1–2", "psalm": 102}, {"day": 103, "reading": "2 Kings 3–4", "psalm": 103}, {"day": 104, "reading": "2 Kings 5–6", "psalm": 104}, {"day": 105, "reading": "2 Kings 7–8", "psalm": 105}, {"day": 106, "reading": "2 Kings 9–10", "psalm": 106}, {"day": 107, "reading": "2 Kings 11–12", "psalm": 107}, {"day": 108, "reading": "2 Kings 13–14", "psalm": 108}, {"day": 109, "reading": "2 Kings 15–16", "psalm": 109}, {"day": 110, "reading": "2 Kings 17–18", "psalm": 110}, {"day": 111, "reading": "2 Kings 19–20", "psalm": 111}, {"day": 112, "reading": "2 Kings 21–22", "psalm": 112}, {"day": 113, "reading": "2 Kings 23–24", "psalm": 113}, {"day": 114, "reading": "3 Kings 1–2", "psalm": 114}, {"day": 115, "reading": "3 Kings 3–4", "psalm": 115}, {"day": 116, "reading": "3 Kings 5–6", "psalm": 116}, {"day": 117, "reading": "3 Kings 7–8", "psalm": 117}, {"day": 118, "reading": "3 Kings 9–10", "psalm": 118}, {"day": 119, "reading": "3 Kings 11–12", "psalm": 119}, {"day": 120, "reading": "3 Kings 13–14", "psalm": 120}, {"day": 121, "reading": "3 Kings 15–16", "psalm": 121}, {"day": 122, "reading": "3 Kings 17–18", "psalm": 122}, {"day": 123, "reading": "3 Kings 19–20", "psalm": 123}, {"day": 124, "reading": "3 Kings 21–22", "psalm": 124}, {"day": 125, "reading": "4 Kings 1–2", "psalm": 125}, {"day": 126, "reading": "4 Kings 3–4", "psalm": 126}, {"day": 127, "reading": "4 Kings 5–6", "psalm": 127}, {"day": 128, "reading": "4 Kings 7–8", "psalm": 128}, {"day": 129, "reading": "4 Kings 9–10", "psalm": 129}, {"day": 130, "reading": "4 Kings 11–12", "psalm": 130}, {"day": 131, "reading": "4 Kings 13–14", "psalm": 131}, {"day": 132, "reading": "4 Kings 15–16", "psalm": 132}, {"day": 133, "reading": "4 Kings 17–18", "psalm": 133}, {"day": 134, "reading": "4 Kings 19–20", "psalm": 134}, {"day": 135, "reading": "4 Kings 21–22", "psalm": 135}, {"day": 136, "reading": "4 Kings 23–24", "psalm": 136}, {"day": 137, "reading": "4 Kings 25; 2 Paralipomenon 29", "psalm": 137}, {"day": 138, "reading": "2 Paralipomenon 30–31", "psalm": 138}, {"day": 139, "reading": "2 Paralipomenon 32–33", "psalm": 139}, {"day": 140, "reading": "2 Paralipomenon 34–35", "psalm": 140}, {"day": 141, "reading": "2 Paralipomenon 36; 1 Esdras 1", "psalm": 141}, {"day": 142, "reading": "1 Esdras 2–3", "psalm": 142}, {"day": 143, "reading": "1 Esdras 4–5", "psalm": 143}, {"day": 144, "reading": "1 Esdras 6–7", "psalm": 144}, {"day": 145, "reading": "1 Esdras 8–9", "psalm": 145}, {"day": 146, "reading": "1 Esdras 10; 2 Esdras 1", "psalm": 146}, {"day": 147, "reading": "2 Esdras 2–3", "psalm": 147}, {"day": 148, "reading": "2 Esdras 4–5", "psalm": 148}, {"day": 149, "reading": "2 Esdras 6–7", "psalm": 149}, {"day": 150, "reading": "2 Esdras 8–9", "psalm": 150}, {"day": 151, "reading": "2 Esdras 10–11", "psalm": 1}, {"day": 152, "reading": "2 Esdras 12–13", "psalm": 2}, {"day": 153, "reading": "Tobias 1–2", "psalm": 3}, {"day": 154, "reading": "Tobias 3–4", "psalm": 4}, {"day": 155, "reading": "Tobias 5–6", "psalm": 5}, {"day": 156, "reading": "Tobias 7–8", "psalm": 6}, {"day": 157, "reading": "Tobias 9–10", "psalm": 7}, {"day": 158, "reading": "Tobias 11–12", "psalm": 8}, {"day": 159, "reading": "Tobias 13–14", "psalm": 9}, {"day": 160, "reading": "Judith 1–2", "psalm": 10}, {"day": 161, "reading": "Judith 3–4", "psalm": 11}, {"day": 162, "reading": "Judith 5–6", "psalm": 12}, {"day": 163, "reading": "Judith 7–8", "psalm": 13}, {"day": 164, "reading": "Judith 9–10", "psalm": 14}, {"day": 165, "reading": "Judith 11–12", "psalm": 15}, {"day": 166, "reading": "Judith 13–14", "psalm": 16}, {"day": 167, "reading": "Judith 15–16", "psalm": 17}, {"day": 168, "reading": "Esther 1–2", "psalm": 18}, {"day": 169, "reading": "Esther 3–4", "psalm": 19}, {"day": 170, "reading": "Esther 5–6", "psalm": 20}, {"day": 171, "reading": "Esther 7–8", "psalm": 21}, {"day": 172, "reading": "Esther 9–10", "psalm": 22}, {"day": 173, "reading": "Esther 11–12", "psalm": 23}, {"day": 174, "reading": "Esther 13–14", "psalm": 24}, {"day": 175, "reading": "Esther 15–16", "psalm": 25}, {"day": 176, "reading": "1 Machabees 1–2", "psalm": 26}, {"day": 177, "reading": "1 Machabees 3–4", "psalm": 27}, {"day": 178, "reading": "1 Machabees 5–6", "psalm": 28}, {"day": 179, "reading": "1 Machabees 7–8", "psalm": 29}, {"day": 180, "reading": "1 Machabees 9–10", "psalm": 30}, {"day": 181, "reading": "1 Machabees 11–12", "psalm": 31}, {"day": 182, "reading": "1 Machabees 13–14", "psalm": 32}, {"day": 183, "reading": "1 Machabees 15–16", "psalm": 33}, {"day": 184, "reading": "2 Machabees 1–2", "psalm": 34}, {"day": 185, "reading": "2 Machabees 3–4", "psalm": 35}, {"day": 186, "reading": "2 Machabees 5–6", "psalm": 36}, {"day": 187, "reading": "2 Machabees 7–8", "psalm": 37}, {"day": 188, "reading": "2 Machabees 9–10", "psalm": 38}, {"day": 189, "reading": "2 Machabees 11–12", "psalm": 39}, {"day": 190, "reading": "2 Machabees 13–14", "psalm": 40}, {"day": 191, "reading": "2 Machabees 15; Jonas 1", "psalm": 41}, {"day": 192, "reading": "Jonas 2–3", "psalm": 42}, {"day": 193, "reading": "Jonas 4; Daniel 1", "psalm": 43}, {"day": 194, "reading": "Daniel 2–3", "psalm": 44}, {"day": 195, "reading": "Daniel 4–5", "psalm": 45}, {"day": 196, "reading": "Daniel 6–7", "psalm": 46}, {"day": 197, "reading": "Daniel 8–9", "psalm": 47}, {"day": 198, "reading": "Daniel 10–11", "psalm": 48}, {"day": 199, "reading": "Daniel 12–13", "psalm": 49}, {"day": 200, "reading": "Daniel 14; Isaias 6", "psalm": 50}, {"day": 201, "reading": "Isaias 7–8", "psalm": 51}, {"day": 202, "reading": "Isaias 9–10", "psalm": 52}, {"day": 203, "reading": "Isaias 11–12", "psalm": 53}, {"day": 204, "reading": "Isaias 35; Isaias 40", "psalm": 54}, {"day": 205, "reading": "Isaias 41–42", "psalm": 55}, {"day": 206, "reading": "Isaias 43–44", "psalm": 56}, {"day": 207, "reading": "Isaias 45–46", "psalm": 57}, {"day": 208, "reading": "Isaias 47–48", "psalm": 58}, {"day": 209, "reading": "Isaias 49–50", "psalm": 59}, {"day": 210, "reading": "Isaias 51–52", "psalm": 60}, {"day": 211, "reading": "Isaias 53–54", "psalm": 61}, {"day": 212, "reading": "Isaias 55; Isaias 60", "psalm": 62}, {"day": 213, "reading": "Isaias 61–62", "psalm": 63}, {"day": 214, "reading": "Isaias 63–64", "psalm": 64}, {"day": 215, "reading": "Isaias 65–66", "psalm": 65}, {"day": 216, "reading": "Jeremias 1; Jeremias 7", "psalm": 66}, {"day": 217, "reading": "Jeremias 18–19", "psalm": 67}, {"day": 218, "reading": "Jeremias 20; Jeremias 26", "psalm": 68}, {"day": 219, "reading": "Jeremias 27–28", "psalm": 69}, {"day": 220, "reading": "Jeremias 29–30", "psalm": 70}, {"day": 221, "reading": "Jeremias 31–32", "psalm": 71}, {"day": 222, "reading": "Jeremias 33; Jeremias 36", "psalm": 72}, {"day": 223, "reading": "Jeremias 37–38", "psalm": 73}, {"day": 224, "reading": "Jeremias 39; Ezechiel 1", "psalm": 74}, {"day": 225, "reading": "Ezechiel 2–3", "psalm": 75}, {"day": 226, "reading": "Ezechiel 8–9", "psalm": 76}, {"day": 227, "reading": "Ezechiel 10–11", "psalm": 77}, {"day": 228, "reading": "Ezechiel 18; Ezechiel 34", "psalm": 78}, {"day": 229, "reading": "Ezechiel 36–37", "psalm": 79}, {"day": 230, "reading": "Ezechiel 40–41", "psalm": 80}, {"day": 231, "reading": "Ezechiel 42–43", "psalm": 81}, {"day": 232, "reading": "Ezechiel 44–45", "psalm": 82}, {"day": 233, "reading": "Ezechiel 46–47", "psalm": 83}, {"day": 234, "reading": "Ezechiel 48; St. Matthew 1", "psalm": 84}, {"day": 235, "reading": "St. Matthew 2–3", "psalm": 85}, {"day": 236, "reading": "St. Matthew 4–5", "psalm": 86}, {"day": 237, "reading": "St. Matthew 6–7", "psalm": 87}, {"day": 238, "reading": "St. Matthew 8–9", "psalm": 88}, {"day": 239, "reading": "St. Matthew 10–11", "psalm": 89}, {"day": 240, "reading": "St. Matthew 12–13", "psalm": 90}, {"day": 241, "reading": "St. Matthew 14–15", "psalm": 91}, {"day": 242, "reading": "St. Matthew 16–17", "psalm": 92}, {"day": 243, "reading": "St. Matthew 18–19", "psalm": 93}, {"day": 244, "reading": "St. Matthew 20–21", "psalm": 94}, {"day": 245, "reading": "St. Matthew 22–23", "psalm": 95}, {"day": 246, "reading": "St. Matthew 24–25", "psalm": 96}, {"day": 247, "reading": "St. Matthew 26–27", "psalm": 97}, {"day": 248, "reading": "St. Matthew 28; St. Mark 1", "psalm": 98}, {"day": 249, "reading": "St. Mark 2–3", "psalm": 99}, {"day": 250, "reading": "St. Mark 4–5", "psalm": 100}, {"day": 251, "reading": "St. Mark 6–7", "psalm": 101}, {"day": 252, "reading": "St. Mark 8–9", "psalm": 102}, {"day": 253, "reading": "St. Mark 10–11", "psalm": 103}, {"day": 254, "reading": "St. Mark 12–13", "psalm": 104}, {"day": 255, "reading": "St. Mark 14–15", "psalm": 105}, {"day": 256, "reading": "St. Mark 16; St. Luke 1", "psalm": 106}, {"day": 257, "reading": "St. Luke 2–3", "psalm": 107}, {"day": 258, "reading": "St. Luke 4–5", "psalm": 108}, {"day": 259, "reading": "St. Luke 6–7", "psalm": 109}, {"day": 260, "reading": "St. Luke 8–9", "psalm": 110}, {"day": 261, "reading": "St. Luke 10–11", "psalm": 111}, {"day": 262, "reading": "St. Luke 12–13", "psalm": 112}, {"day": 263, "reading": "St. Luke 14–15", "psalm": 113}, {"day": 264, "reading": "St. Luke 16–17", "psalm": 114}, {"day": 265, "reading": "St. Luke 18–19", "psalm": 115}, {"day": 266, "reading": "St. Luke 20–21", "psalm": 116}, {"day": 267, "reading": "St. Luke 22–23", "psalm": 117}, {"day": 268, "reading": "St. Luke 24; St. John 1", "psalm": 118}, {"day": 269, "reading": "St. John 2–3", "psalm": 119}, {"day": 270, "reading": "St. John 4–5", "psalm": 120}, {"day": 271, "reading": "St. John 6–7", "psalm": 121}, {"day": 272, "reading": "St. John 8–9", "psalm": 122}, {"day": 273, "reading": "St. John 10–11", "psalm": 123}, {"day": 274, "reading": "St. John 12–13", "psalm": 124}, {"day": 275, "reading": "St. John 14–15", "psalm": 125}, {"day": 276, "reading": "St. John 16–17", "psalm": 126}, {"day": 277, "reading": "St. John 18–19", "psalm": 127}, {"day": 278, "reading": "St. John 20–21", "psalm": 128}, {"day": 279, "reading": "Acts 1–2", "psalm": 129}, {"day": 280, "reading": "Acts 3–4", "psalm": 130}, {"day": 281, "reading": "Acts 5–6", "psalm": 131}, {"day": 282, "reading": "Acts 7–8", "psalm": 132}, {"day": 283, "reading": "Acts 9–10", "psalm": 133}, {"day": 284, "reading": "Acts 11–12", "psalm": 134}, {"day": 285, "reading": "Acts 13–14", "psalm": 135}, {"day": 286, "reading": "Acts 15–16", "psalm": 136}, {"day": 287, "reading": "Acts 17–18", "psalm": 137}, {"day": 288, "reading": "Acts 19–20", "psalm": 138}, {"day": 289, "reading": "Acts 21–22", "psalm": 139}, {"day": 290, "reading": "Acts 23–24", "psalm": 140}, {"day": 291, "reading": "Acts 25–26", "psalm": 141}, {"day": 292, "reading": "Acts 27–28", "psalm": 142}, {"day": 293, "reading": "Romans 1–2", "psalm": 143}, {"day": 294, "reading": "Romans 3–4", "psalm": 144}, {"day": 295, "reading": "Romans 5–6", "psalm": 145}, {"day": 296, "reading": "Romans 7–8", "psalm": 146}, {"day": 297, "reading": "Romans 9–10", "psalm": 147}, {"day": 298, "reading": "Romans 11–12", "psalm": 148}, {"day": 299, "reading": "Romans 13–14", "psalm": 149}, {"day": 300, "reading": "Romans 15–16", "psalm": 150}, {"day": 301, "reading": "1 Corinthians 1–2", "psalm": 1}, {"day": 302, "reading": "1 Corinthians 3–4", "psalm": 2}, {"day": 303, "reading": "1 Corinthians 5–6", "psalm": 3}, {"day": 304, "reading": "1 Corinthians 7–8", "psalm": 4}, {"day": 305, "reading": "1 Corinthians 9–10", "psalm": 5}, {"day": 306, "reading": "1 Corinthians 11–12", "psalm": 6}, {"day": 307, "reading": "1 Corinthians 13–14", "psalm": 7}, {"day": 308, "reading": "1 Corinthians 15–16", "psalm": 8}, {"day": 309, "reading": "2 Corinthians 1–2", "psalm": 9}, {"day": 310, "reading": "2 Corinthians 3–4", "psalm": 10}, {"day": 311, "reading": "2 Corinthians 5–6", "psalm": 11}, {"day": 312, "reading": "2 Corinthians 7–8", "psalm": 12}, {"day": 313, "reading": "2 Corinthians 9–10", "psalm": 13}, {"day": 314, "reading": "2 Corinthians 11–12", "psalm": 14}, {"day": 315, "reading": "2 Corinthians 13; Galatians 1", "psalm": 15}, {"day": 316, "reading": "Galatians 2–3", "psalm": 16}, {"day": 317, "reading": "Galatians 4–5", "psalm": 17}, {"day": 318, "reading": "Galatians 6; Ephesians 1", "psalm": 18}, {"day": 319, "reading": "Ephesians 2–3", "psalm": 19}, {"day": 320, "reading": "Ephesians 4–5", "psalm": 20}, {"day": 321, "reading": "Ephesians 6; Philippians 1", "psalm": 21}, {"day": 322, "reading": "Philippians 2–3", "psalm": 22}, {"day": 323, "reading": "Philippians 4; Colossians 1", "psalm": 23}, {"day": 324, "reading": "Colossians 2–3", "psalm": 24}, {"day": 325, "reading": "Colossians 4; 1 Thessalonians 1", "psalm": 25}, {"day": 326, "reading": "1 Thessalonians 2–3", "psalm": 26}, {"day": 327, "reading": "1 Thessalonians 4–5", "psalm": 27}, {"day": 328, "reading": "2 Thessalonians 1–2", "psalm": 28}, {"day": 329, "reading": "2 Thessalonians 3; 1 Timothy 1", "psalm": 29}, {"day": 330, "reading": "1 Timothy 2–3", "psalm": 30}, {"day": 331, "reading": "1 Timothy 4–5", "psalm": 31}, {"day": 332, "reading": "1 Timothy 6; 2 Timothy 1", "psalm": 32}, {"day": 333, "reading": "2 Timothy 2–3", "psalm": 33}, {"day": 334, "reading": "2 Timothy 4; Titus 1", "psalm": 34}, {"day": 335, "reading": "Titus 2–3", "psalm": 35}, {"day": 336, "reading": "Philemon 1; Hebrews 1", "psalm": 36}, {"day": 337, "reading": "Hebrews 2–3", "psalm": 37}, {"day": 338, "reading": "Hebrews 4–5", "psalm": 38}, {"day": 339, "reading": "Hebrews 6–7", "psalm": 39}, {"day": 340, "reading": "Hebrews 8–9", "psalm": 40}, {"day": 341, "reading": "Hebrews 10–11", "psalm": 41}, {"day": 342, "reading": "Hebrews 12–13", "psalm": 42}, {"day": 343, "reading": "James 1–2", "psalm": 43}, {"day": 344, "reading": "James 3–4", "psalm": 44}, {"day": 345, "reading": "James 5; 1 Peter 1", "psalm": 45}, {"day": 346, "reading": "1 Peter 2–3", "psalm": 46}, {"day": 347, "reading": "1 Peter 4–5", "psalm": 47}, {"day": 348, "reading": "2 Peter 1–2", "psalm": 48}, {"day": 349, "reading": "2 Peter 3; 1 John 1", "psalm": 49}, {"day": 350, "reading": "1 John 2–3", "psalm": 50}, {"day": 351, "reading": "1 John 4–5", "psalm": 51}, {"day": 352, "reading": "2 John 1; 3 John 1", "psalm": 52}, {"day": 353, "reading": "Jude 1; Apocalypse 1", "psalm": 53}, {"day": 354, "reading": "Apocalypse 2–3", "psalm": 54}, {"day": 355, "reading": "Apocalypse 4–5", "psalm": 55}, {"day": 356, "reading": "Apocalypse 6–7", "psalm": 56}, {"day": 357, "reading": "Apocalypse 8–9", "psalm": 57}, {"day": 358, "reading": "Apocalypse 10–11", "psalm": 58}, {"day": 359, "reading": "Apocalypse 12–13", "psalm": 59}, {"day": 360, "reading": "Apocalypse 14–15", "psalm": 60}, {"day": 361, "reading": "Apocalypse 16–17", "psalm": 61}, {"day": 362, "reading": "Apocalypse 18–19", "psalm": 62}, {"day": 363, "reading": "Apocalypse 20", "psalm": 63}, {"day": 364, "reading": "Apocalypse 21", "psalm": 64}, {"day": 365, "reading": "Apocalypse 22", "psalm": 65}];
 const KEY = "catholicNarrativeBibleProgressV1";
+const THEME_KEY = "catholicNarrativeBibleThemeV1";
+const TRANSLATION_KEY = "catholicNarrativeBibleTranslationV1";
+const RSV_BOOK_NAMES = {
+  "Josue":"Joshua","1 Kings":"1 Samuel","2 Kings":"2 Samuel",
+  "3 Kings":"1 Kings","4 Kings":"2 Kings",
+  "1 Paralipomenon":"1 Chronicles","2 Paralipomenon":"2 Chronicles",
+  "1 Esdras":"Ezra","2 Esdras":"Nehemiah","Tobias":"Tobit",
+  "1 Machabees":"1 Maccabees","2 Machabees":"2 Maccabees",
+  "Isaias":"Isaiah","Jeremias":"Jeremiah","Ezechiel":"Ezekiel",
+  "St. Matthew":"Matthew","St. Mark":"Mark","St. Luke":"Luke",
+  "St. John":"John","Apocalypse":"Revelation"
+};
+let theme = localStorage.getItem(THEME_KEY) || "light";
+let translation = localStorage.getItem(TRANSLATION_KEY) || "douay";
 let completed = new Set(JSON.parse(localStorage.getItem(KEY) || "[]"));
 
 const list = document.getElementById("list");
@@ -120,10 +177,34 @@ function updateProgress() {
   progress.value = completed.size;
   progressText.textContent = `${completed.size} / 365`;
 }
+function displayReading(reading) {
+  if (translation !== "rsv") return reading;
+  let result = reading;
+  Object.entries(RSV_BOOK_NAMES)
+    .sort((a,b) => b[0].length - a[0].length)
+    .forEach(([douay,rsv]) => result = result.replaceAll(douay,rsv));
+  return result;
+}
+function applyTheme() {
+  document.documentElement.dataset.theme = theme;
+  document.getElementById("themeBtn").textContent =
+    theme === "dark" ? "Light mode" : "Dark mode";
+}
+function applyTranslation() {
+  const isRsv = translation === "rsv";
+  document.getElementById("translationBtn").textContent =
+    isRsv ? "Use Douay-Rheims names" : "Use RSV-2CE names";
+  document.getElementById("subtitle").textContent =
+    (isRsv ? "RSV-2CE" : "Douay-Rheims") +
+    " • 365 days • progress saved in this browser";
+}
 function render(filter="") {
   list.innerHTML = "";
   const f = filter.trim().toLowerCase();
-  PLAN.filter(x => !f || String(x.day).includes(f) || x.reading.toLowerCase().includes(f))
+  PLAN.filter(x => {
+        const shown = displayReading(x.reading).toLowerCase();
+        return !f || String(x.day).includes(f) || shown.includes(f);
+      })
       .forEach(item => {
     const wrap = document.createElement("div");
     wrap.className = "card day-card" + (completed.has(item.day) ? " done" : "");
@@ -139,7 +220,7 @@ function render(filter="") {
     });
     const text = document.createElement("div");
     text.innerHTML = `<div class="day-num">Day ${item.day}</div>
-      <div class="reading">${item.reading}</div>
+      <div class="reading">${displayReading(item.reading)}</div>
       <div class="psalm">Psalm ${item.psalm}</div>`;
     wrap.append(cb, text);
     list.appendChild(wrap);
@@ -198,6 +279,38 @@ document.getElementById("importFile").addEventListener("change", async e => {
     alert("That file does not contain valid progress data.");
   }
 });
+const settingsPanel = document.getElementById("settingsPanel");
+const settingsBtn = document.getElementById("settingsBtn");
+const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+
+function setSettingsOpen(open) {
+  settingsPanel.classList.toggle("open", open);
+  settingsPanel.setAttribute("aria-hidden", String(!open));
+  settingsBtn.setAttribute("aria-expanded", String(open));
+  if (open) {
+    settingsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+settingsBtn.addEventListener("click", () => {
+  setSettingsOpen(!settingsPanel.classList.contains("open"));
+});
+
+closeSettingsBtn.addEventListener("click", () => setSettingsOpen(false));
+
+document.getElementById("themeBtn").addEventListener("click", () => {
+  theme = theme === "dark" ? "light" : "dark";
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme();
+});
+document.getElementById("translationBtn").addEventListener("click", () => {
+  translation = translation === "rsv" ? "douay" : "rsv";
+  localStorage.setItem(TRANSLATION_KEY, translation);
+  applyTranslation();
+  render(search.value);
+});
+applyTheme();
+applyTranslation();
 updateProgress();
 render();
 </script>
